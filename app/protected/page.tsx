@@ -1,9 +1,7 @@
 import ClientGrid from '@/components/ClientGrid';
-import Squares from '@/components/squares';
 import { GridProvider } from '@/context/GridContext';
 import { GridAPI } from '@/queries/grid.api';
 import { createClient } from '@/utils/supabase/server';
-import { InfoIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 export default async function ProtectedPage() {
@@ -21,7 +19,7 @@ export default async function ProtectedPage() {
   if (error) throw new Error(error.message);
 
   return (
-    <div className=''>
+    <div className="">
       <GridProvider initialData={data}>
         <ClientGrid />
       </GridProvider>

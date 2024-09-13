@@ -35,7 +35,7 @@ export const signUpAction = async (formData: FormData) => {
   }
 };
 
-export const signInAction = async (formData: FormData) => {
+export const signInAction = async () => {
   const supabase = createClient();
   const origin = headers().get('origin');
   // 2. Sign in with GitHub
