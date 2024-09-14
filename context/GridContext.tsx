@@ -3,20 +3,18 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { GridAPI } from '@/queries/grid.api';
 import useSupabaseBrowser from '@/utils/supabase/client';
-import { Database } from '@/utils/generated/database.types';
 import { shuffle } from '@/utils/utils';
+import { Database } from '@/utils/generated/database.types';
 
-// Define the type for a grid cell
-type GridCell = Database['public']['Tables']['grid']['Row'];
+type GridCell = Database['public']['Tables']['grid_cells']['Row'];
 
-// Define the type for the context value
 interface GridContextType {
   gridData: GridCell[];
   name: string;
   setName: React.Dispatch<React.SetStateAction<string>>;
-  handleAssign: (id: number) => Promise<void>;
+  handleAssign: (id: string) => Promise<void>;
   handleRandomAssign: (bulkCount: number) => Promise<void>;
-  handleDelete: (id: number) => Promise<void>;
+  handleDelete: (id: string) => Promise<void>;
   bulkCount: number;
   setBulkCount: React.Dispatch<React.SetStateAction<number>>;
   handleReset: () => Promise<void>;
@@ -38,11 +36,19 @@ export function GridProvider({
   const supabase = useSupabaseBrowser();
 
   const handleAssign = useCallback(
-    async (id: number) => {
+    async (id: string) => {
       if (!name) return;
 
-      const { error } = await GridAPI.update(supabase, id, name);
-      const { data } = await GridAPI.getAll(supabase);
+      const { error } = await GridAPI.update(
+        supabase,
+        gridData[0].grid_id!,
+        id,
+        name
+      );
+      const { data } = await GridAPI.getGridCells(
+        supabase,
+        gridData[0].grid_id!
+      );
 
       if (error) {
         console.error('Error updating cell:', error);
@@ -54,7 +60,7 @@ export function GridProvider({
         setName('');
       }
     },
-    [name, supabase, setGridData]
+    [name, supabase, setGridData, gridData]
   );
   const handleRandomAssign = useCallback(
     async (bulkCount: number = 1) => {
@@ -62,15 +68,25 @@ export function GridProvider({
       if (emptyCells.length === 0) return;
 
       const cellsToAssign = shuffle(emptyCells).slice(0, bulkCount);
-      const idsToAssign = cellsToAssign.map((cell) => cell.id);
+      const idsToAssign = cellsToAssign.map((cell) => cell.uuid) as string[];
 
       let error;
       if (idsToAssign.length === 1) {
         // Single assignment
-        ({ error } = await GridAPI.update(supabase, idsToAssign[0], name));
+        ({ error } = await GridAPI.update(
+          supabase,
+          gridData[0].grid_id!,
+          idsToAssign[0],
+          name
+        ));
       } else {
         // Bulk assignment
-        ({ error } = await GridAPI.updateMany(supabase, idsToAssign, name));
+        ({ error } = await GridAPI.updateMany(
+          supabase,
+          gridData[0].grid_id!,
+          idsToAssign,
+          name
+        ));
       }
 
       if (error) {
@@ -78,7 +94,10 @@ export function GridProvider({
         return;
       }
 
-      const { data } = await GridAPI.getAll(supabase);
+      const { data } = await GridAPI.getGridCells(
+        supabase,
+        gridData[0].grid_id!
+      );
       if (data) {
         setGridData(data);
         setName('');
@@ -88,9 +107,18 @@ export function GridProvider({
   );
 
   const handleDelete = useCallback(
-    async (id: number) => {
-      const { error } = await GridAPI.update(supabase, id, null);
-      const { data } = await GridAPI.getAll(supabase);
+    async (id: string) => {
+      const { error } = await GridAPI.update(
+        supabase,
+        gridData[0].grid_id!,
+        id,
+        null
+      );
+
+      const { data } = await GridAPI.getGridCells(
+        supabase,
+        gridData[0].grid_id!
+      );
 
       if (error) {
         console.error('Error deleting cell:', error);
@@ -101,23 +129,24 @@ export function GridProvider({
         setGridData(data);
       }
     },
-    [supabase]
+    [supabase, gridData, setGridData]
   );
 
   const handleReset = useCallback(async () => {
-    const { error } = await GridAPI.resetAll(supabase);
+    const { error } = await GridAPI.resetAll(supabase, gridData[0].grid_id!);
     if (error) {
       console.error('Error resetting grid:', error);
       return;
     }
 
-    const { data } = await GridAPI.getAll(supabase);
+    const { data } = await GridAPI.getGridCells(supabase, gridData[0].grid_id!);
+
     if (data) {
       setGridData(data);
       setBulkCount(1);
       setName('');
     }
-  }, [supabase]);
+  }, [supabase, gridData, setGridData, setBulkCount, setName]);
 
   const contextValue: GridContextType = {
     gridData,

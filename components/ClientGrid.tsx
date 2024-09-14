@@ -70,7 +70,7 @@ export default function ClientGrid() {
                 <Button
                   variant={'destructive'}
                   size={'sm'}
-                  onClick={() => handleDelete(cell.id)}
+                  onClick={() => handleDelete(cell.uuid as string)}
                 >
                   Delete
                 </Button>
@@ -78,7 +78,7 @@ export default function ClientGrid() {
                 <Button
                   size={'sm'}
                   disabled={!name}
-                  onClick={() => handleAssign(cell.id)}
+                  onClick={() => handleAssign(cell.uuid as string)}
                 >
                   Assign
                 </Button>
