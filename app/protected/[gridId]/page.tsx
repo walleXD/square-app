@@ -29,13 +29,29 @@ export default async function GridPage({
     return <div>Grid not found {error.message}</div>;
   }
 
-  const { data } = await GridAPI.getGridCells(supabase, params.gridId);
+  const { data: cellsData } = await GridAPI.getGridCells(
+    supabase,
+    params.gridId
+  );
+  const { data: rowAssignments } = await GridAPI.getGridRowAssignments(
+    supabase,
+    params.gridId
+  );
+  const { data: colAssignments } = await GridAPI.getGridColAssignments(
+    supabase,
+    params.gridId
+  );
 
-  if (!data) {
+  if (!cellsData) {
     return <div>Grid not found</div>;
   }
+
   return (
-    <GridProvider initialData={data}>
+    <GridProvider
+      initialData={cellsData ?? []}
+      initialRowAssignments={rowAssignments ?? []}
+      initialColAssignments={colAssignments ?? []}
+    >
       <ClientGrid />
     </GridProvider>
   );

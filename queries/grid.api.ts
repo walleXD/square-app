@@ -95,4 +95,48 @@ export const GridAPI = {
       .order('row', { ascending: true })
       .order('col', { ascending: true });
   },
+  createGridRowAssignments: (
+    client: TypedSupabaseClient,
+    gridId: string,
+    numRows: number
+  ) => {
+    const values = Array.from({ length: numRows }, (_, i) => i);
+    const shuffledValues = values.sort(() => Math.random() - 0.5);
+
+    const rowsToInsert = shuffledValues.map((value, row) => ({
+      grid_id: gridId,
+      row: row,
+      value: value,
+    }));
+    return client.from('grid_row_assignments').insert(rowsToInsert);
+  },
+  createGridColAssignments: (
+    client: TypedSupabaseClient,
+    gridId: string,
+    numCols: number
+  ) => {
+    const values = Array.from({ length: numCols }, (_, i) => i);
+    const shuffledValues = values.sort(() => Math.random() - 0.5);
+
+    const colsToInsert = shuffledValues.map((value, col) => ({
+      grid_id: gridId,
+      col: col,
+      value: value,
+    }));
+    return client.from('grid_col_assignments').insert(colsToInsert);
+  },
+  getGridRowAssignments: (client: TypedSupabaseClient, gridId: string) => {
+    return client
+      .from('grid_row_assignments')
+      .select('*')
+      .eq('grid_id', gridId)
+      .order('row', { ascending: true });
+  },
+  getGridColAssignments: (client: TypedSupabaseClient, gridId: string) => {
+    return client
+      .from('grid_col_assignments')
+      .select('*')
+      .eq('grid_id', gridId)
+      .order('col', { ascending: true });
+  },
 };

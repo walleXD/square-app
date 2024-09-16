@@ -46,7 +46,6 @@ export function CreateGridSheet() {
 
     const newGridId = data.uuid;
 
-    console.log('newGridId', newGridId);
     const { error: cellsError } = await GridAPI.createGridCells(
       supabase,
       newGridId!,

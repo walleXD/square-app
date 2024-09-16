@@ -7,6 +7,10 @@ import { shuffle } from '@/utils/utils';
 import { Database } from '@/utils/generated/database.types';
 
 type GridCell = Database['public']['Tables']['grid_cells']['Row'];
+type RowAssignment =
+  Database['public']['Tables']['grid_row_assignments']['Row'];
+type ColAssignment =
+  Database['public']['Tables']['grid_col_assignments']['Row'];
 
 interface GridContextType {
   gridData: GridCell[];
@@ -18,6 +22,10 @@ interface GridContextType {
   bulkCount: number;
   setBulkCount: React.Dispatch<React.SetStateAction<number>>;
   handleReset: () => Promise<void>;
+  rowAssignments: RowAssignment[];
+  colAssignments: ColAssignment[];
+  handleGenerateAssignments: () => Promise<void>;
+  //   areAssignmentsGenerated: boolean;
 }
 
 // Create the context with the correct type
@@ -26,13 +34,24 @@ const GridContext = createContext<GridContextType | null>(null);
 export function GridProvider({
   children,
   initialData,
+  initialRowAssignments,
+  initialColAssignments,
 }: {
   children: React.ReactNode;
   initialData: GridCell[];
+  initialRowAssignments: RowAssignment[];
+  initialColAssignments: ColAssignment[];
 }) {
   const [gridData, setGridData] = useState<GridCell[]>(initialData);
   const [name, setName] = useState('');
   const [bulkCount, setBulkCount] = useState<number>(1);
+  const [rowAssignments, setRowAssignments] = useState<RowAssignment[]>(
+    initialRowAssignments
+  );
+  const [colAssignments, setColAssignments] = useState<ColAssignment[]>(
+    initialColAssignments
+  );
+
   const supabase = useSupabaseBrowser();
 
   const handleAssign = useCallback(
@@ -148,6 +167,45 @@ export function GridProvider({
     }
   }, [supabase, gridData, setGridData, setBulkCount, setName]);
 
+  const handleGenerateAssignments = useCallback(async () => {
+    const { error: rowError } = await GridAPI.createGridRowAssignments(
+      supabase,
+      gridData[0].grid_id!,
+      10
+    );
+
+    if (rowError) {
+      console.error('Error creating grid row assignments:', rowError);
+      return;
+    }
+
+    const { error: colError } = await GridAPI.createGridColAssignments(
+      supabase,
+      gridData[0].grid_id!,
+      10
+    );
+
+    if (colError) {
+      console.error('Error creating grid col assignments:', colError);
+      return;
+    }
+
+    const { data: rowData } = await GridAPI.getGridRowAssignments(
+      supabase,
+      gridData[0].grid_id!
+    );
+
+    const { data: colData } = await GridAPI.getGridColAssignments(
+      supabase,
+      gridData[0].grid_id!
+    );
+
+    if (rowData && colData) {
+      setRowAssignments(rowData);
+      setColAssignments(colData);
+    }
+  }, [supabase, gridData]);
+
   const contextValue: GridContextType = {
     gridData,
     name,
@@ -158,6 +216,9 @@ export function GridProvider({
     handleRandomAssign,
     handleDelete,
     handleReset,
+    rowAssignments,
+    colAssignments,
+    handleGenerateAssignments,
   };
 
   return (
