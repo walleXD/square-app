@@ -9,6 +9,13 @@ export const GridAPI = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
   },
+  countEmptyCells: (client: TypedSupabaseClient, gridId: string) => {
+    return client
+      .from('grid_cells')
+      .select('*', { count: 'exact', head: true })
+      .eq('grid_id', gridId)
+      .is('name', null);
+  },
   getOne: (client: TypedSupabaseClient, userId: string, gridId: string) => {
     return client
       .from('grids')
