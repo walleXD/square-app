@@ -6,7 +6,7 @@ import useSupabaseBrowser from '@/utils/supabase/client';
 import { shuffle } from '@/utils/utils';
 import { Database } from '@/utils/generated/database.types';
 
-type GridCell = Database['public']['Tables']['grid_cells']['Row'];
+export type GridCell = Database['public']['Tables']['grid_cells']['Row'];
 type RowAssignment =
   Database['public']['Tables']['grid_row_assignments']['Row'];
 type ColAssignment =

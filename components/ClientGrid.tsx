@@ -8,6 +8,8 @@ import { Card, CardContent, CardFooter } from './ui/card';
 import clsx from 'clsx';
 import { Skeleton } from './ui/skeleton';
 import { Fragment } from 'react';
+import { FilledCellsTable } from './FilledCellsTable';
+import { EmptyCellsTable } from './EmptyCellsTable';
 
 export default function ClientGrid() {
   const {
@@ -27,6 +29,8 @@ export default function ClientGrid() {
 
   const colHeaders = Array.from({ length: 10 }, (_, i) => i);
   const rowHeaders = Array.from({ length: 10 }, (_, i) => i);
+  const filledCells = gridData.filter((cell) => cell.name);
+  const emptyCells = gridData.filter((cell) => !cell.name);
 
   return (
     <div className="mx-auto pt-4 space-y-4">
@@ -130,6 +134,16 @@ export default function ClientGrid() {
             ))}
           </Fragment>
         ))}
+      </div>
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Filled Cells</h2>
+          <FilledCellsTable cells={filledCells} />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold mb-4">Empty Cells</h2>
+          <EmptyCellsTable cells={emptyCells} />
+        </div>
       </div>
     </div>
   );
