@@ -12,7 +12,7 @@
 
 ## Workflow
 
-![Architecture Diagram](game_data_ingestion.png)
+![Architecture Diagram](./gama_data_ingestion.png)
 
 1. **Game Start**: User triggers the game start via UI. The backend stores the session in the database.
 2. **Scheduler Setup**: The backend configures Google Cloud Scheduler to trigger Pub/Sub events every 10 minutes.
